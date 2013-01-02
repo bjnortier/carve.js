@@ -114,7 +114,13 @@ describe('Carve', function() {
         mesh.addTriangle([[0, 0,-10], [10, 0,-10], [10, 10,-10]]);
 
         assert.deepEqual({
-            indices: [0,1,2], front: [[3,4,5]], back:[[6,7,8]],
+            indices: [0,1,2], 
+            front: {
+                indices: [3,4,5]
+            },
+            back: {
+                indices: [6,7,8]
+            },
         }, carve.createBSPTree(mesh));
 
     });
