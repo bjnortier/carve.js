@@ -1,0 +1,10 @@
+{ 
+    "name" : "carve",
+    "main" : "./lib/carve.js",
+    "dependencies": {
+        "requirejs": ">= 2.1.2"
+    },  
+    "devDependencies": {
+        "mocha": ">= 1.7.*",
+    },
+}
