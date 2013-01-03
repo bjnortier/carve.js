@@ -142,7 +142,7 @@ describe('Carve', function() {
 
     it.only('can create a sphere BSP tree', function() {
 
-        var mesh = carve.createSphere({center: [0, 0, 0], radius: 10, resolution: 10});
+        var mesh = carve.createSphere({center: [0, 0, 0], radius: 10, resolution: 50});
         var bsp  = carve.createBSPTree(mesh);
     });
 
