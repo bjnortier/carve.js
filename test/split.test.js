@@ -28,7 +28,7 @@ describe('CSG', function() {
 
     it('can create a BSP tree', function() {
 
-        var sphere1 = new CSG.sphere({center: [0, 0, 0], radius: 10, resolution: 50});
+        var sphere1 = new CSG.sphere({center: [0, 0, 0], radius: 10, resolution: 100});
         var tree = new CSG.Tree(sphere1.toPolygons());
     });
 
@@ -36,10 +36,13 @@ describe('CSG', function() {
 
 describe('Carve', function() {
 
-    var triangleToArray = function(polygon, index) {
+    var triangleToArray = function(mesh, triangleNumber) {
         var result = [];
-        for (var i = 0; i < 9; ++i) {
-            result[i] = polygon[index*9 + i];
+        for (var i = 0; i < 3; ++i) {
+            var positionIndex = mesh.indices[triangleNumber*3+i];
+            for (var j = 0; j < 3; ++j) {
+                result.push(mesh.positions[positionIndex*3+j]);
+            }
         }
         return result;
     }
@@ -63,13 +66,13 @@ describe('Carve', function() {
         mesh.addTriangle([[0,0,0],[10,10,10],[0,0,10]]);
         assert.equal(mesh.numPositions, 3);
         assert.equal(mesh.numTriangles, 1);
-        assert.deepEqual([0,0,0,10,10,10,0,0,10], triangleToArray(mesh.positions, 0));
+        assert.deepEqual([0,0,0,10,10,10,0,0,10], triangleToArray(mesh, 0));
 
         mesh.addTriangle([[0,0,0],[10,10,10],[0,0,10]]);
         assert.equal(mesh.numPositions, 6);
         assert.equal(mesh.numTriangles, 2);
-        assert.deepEqual([0,0,0,10,10,10,0,0,10], triangleToArray(mesh.positions, 0));
-        assert.deepEqual([0,0,0,10,10,10,0,0,10], triangleToArray(mesh.positions, 1));
+        assert.deepEqual([0,0,0,10,10,10,0,0,10], triangleToArray(mesh, 0));
+        assert.deepEqual([0,0,0,10,10,10,0,0,10], triangleToArray(mesh, 1));
 
     });
 
@@ -78,10 +81,10 @@ describe('Carve', function() {
         var sphere1 = carve.createSphere({center: [0, 0, 0], radius: 10, resolution: 1});
 
         assert.equal(sphere1.numTriangles, 4);
-        assert.deepEqual([0, 10, 0, 0, 0, 10, 10, 0, 0], triangleToArray(sphere1.positions, 0));
-        assert.deepEqual([-10, 0, 0, 0, 0, 10, 0, 10, 0], triangleToArray(sphere1.positions, 1));
-        assert.deepEqual([0, -10, 0, 0, 0, 10, -10, 0, 0], triangleToArray(sphere1.positions, 2));
-        assert.deepEqual([10, 0, 0, 0, 0, 10, 0, -10, 0], triangleToArray(sphere1.positions, 3));
+        assert.deepEqual([0, 10, 0, 0, 0, 10, 10, 0, 0], triangleToArray(sphere1, 0));
+        assert.deepEqual([-10, 0, 0, 0, 0, 10, 0, 10, 0], triangleToArray(sphere1, 1));
+        assert.deepEqual([0, -10, 0, 0, 0, 10, -10, 0, 0], triangleToArray(sphere1, 2));
+        assert.deepEqual([10, 0, 0, 0, 0, 10, 0, -10, 0], triangleToArray(sphere1, 3));
 
     });
  
@@ -91,14 +94,21 @@ describe('Carve', function() {
         }
     })
 
+    it('can classify a front polygon');
+    it('can classify a back polygon');
+    it('can classify a coplanar polygon');
+    it('can classify a polygon with on vertex on the plane');
+    it('can classify a polygon with two vertices on the plane');
+
+
     it('can split a straddling polygon', function() {
 
         var mesh = new carve.Mesh();
         mesh.addTriangle([[0, 0,  0], [10, 0, 0], [10, 10, 0]]);
         mesh.addTriangle([[0, 0,-10], [ 5, 0, 3], [ 0,  0,10]]);
 
-        var plane = new carve.Plane().fromPolygon(mesh.positions, [0,1,2]);
-        var classification = plane.classifyPolygon(mesh.positions, [3,4,5]);
+        var plane = new carve.Plane().fromTriangle(mesh, 0);
+        var classification = plane.classifyPolygon(mesh, 1);
 
         var result = plane.splitPolygonNoneCoplanar(mesh, classification);
 
@@ -112,8 +122,8 @@ describe('Carve', function() {
         mesh.addTriangle([[0, 0,   0], [10, 0, 0], [10, 10, 0]]);
         mesh.addTriangle([[0, 0, -10], [0, 0, 0],[10,  0,10]]);
 
-        var plane = new carve.Plane().fromPolygon(mesh.positions, [0,1,2]);
-        var classification = plane.classifyPolygon(mesh.positions, [3,4,5]);
+        var plane = new carve.Plane().fromTriangle(mesh, 0);
+        var classification = plane.classifyPolygon(mesh, 1);
         assert.equal(1, classification.type);
         var result = plane.splitPolygonOneCoplanar(mesh, classification);
 
@@ -129,20 +139,17 @@ describe('Carve', function() {
         mesh.addTriangle([[0, 0,-10], [10, 0,-10], [10, 10,-10]]);
 
         assert.deepEqual({
-            indices: [0,1,2], 
-            front: {
-                indices: [3,4,5]
-            },
-            back: {
-                indices: [6,7,8]
-            },
+            0: {
+                front: 1,
+                back:  2
+            }
         }, carve.createBSPTree(mesh));
 
     });
 
-    it.only('can create a sphere BSP tree', function() {
+    it('can create a sphere BSP tree', function() {
 
-        var mesh = carve.createSphere({center: [0, 0, 0], radius: 10, resolution: 50});
+        var mesh = carve.createSphere({center: [0, 0, 0], radius: 10, resolution: 100});
         var bsp  = carve.createBSPTree(mesh);
     });
 
