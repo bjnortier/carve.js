@@ -1,7 +1,6 @@
 if (typeof require !== "undefined") {
     require('../lib/csg.js');
     var chai = require('chai'),
-        assert = chai.assert,
         requirejs = require('requirejs');
 
     requirejs.config({
@@ -11,11 +10,10 @@ if (typeof require !== "undefined") {
 
     var carve = requirejs('../lib/carve.js');
 } else {
-    var carve = Carve,
-        assert = chai.assert;
-
+    var carve = Carve;
 }
 
+var assert = chai.assert;
 chai.Assertion.includeStack = true;
 
 describe('CSG', function() {
@@ -27,7 +25,6 @@ describe('CSG', function() {
     })
 
     it('can create a BSP tree', function() {
-
         var sphere1 = new CSG.sphere({center: [0, 0, 0], radius: 10, resolution: 100});
         var tree = new CSG.Tree(sphere1.toPolygons());
     });
@@ -80,11 +77,15 @@ describe('Carve', function() {
 
         var sphere1 = carve.createSphere({center: [0, 0, 0], radius: 10, resolution: 1});
 
-        assert.equal(sphere1.numTriangles, 4);
-        assert.deepEqual([0, 10, 0, 0, 0, 10, 10, 0, 0], triangleToArray(sphere1, 0));
-        assert.deepEqual([-10, 0, 0, 0, 0, 10, 0, 10, 0], triangleToArray(sphere1, 1));
-        assert.deepEqual([0, -10, 0, 0, 0, 10, -10, 0, 0], triangleToArray(sphere1, 2));
-        assert.deepEqual([10, 0, 0, 0, 0, 10, 0, -10, 0], triangleToArray(sphere1, 3));
+        assert.equal(sphere1.numTriangles, 8);
+        assert.deepEqual([0  , 10,  0,  0,  0, 10, 10,  0, 0], triangleToArray(sphere1, 0));
+        assert.deepEqual([0  ,  0,-10,  0, 10,  0, 10,  0, 0], triangleToArray(sphere1, 1));
+        assert.deepEqual([-10,  0,  0,  0,  0, 10,  0, 10, 0], triangleToArray(sphere1, 2));
+        assert.deepEqual([0  ,  0,-10,-10,  0,  0,  0, 10, 0], triangleToArray(sphere1, 3));
+        assert.deepEqual([0  ,-10,  0,  0,  0, 10,-10,  0, 0], triangleToArray(sphere1, 4));
+        assert.deepEqual([0  ,  0,-10,  0,-10,  0,-10,  0, 0], triangleToArray(sphere1, 5));
+        assert.deepEqual([10 ,  0,  0,  0,  0, 10,  0,-10, 0], triangleToArray(sphere1, 6));
+        assert.deepEqual([0  ,  0,-10, 10,  0,  0,  0,-10, 0], triangleToArray(sphere1, 7));
 
     });
  
